@@ -99,11 +99,11 @@ def value_handler(value: str, key: str) -> Union[list, int, str, bool]:
             result = str_case(value)
         elif keys[key] == "bool":
              result = bool_case(value)
+        return result
     except ValueError as e:
         print(f"Erorr: {e}")
     except Exception as e:
         print(f"Error: {e}")
-    return result
 
 
 def parser(file: str) -> dict:
@@ -137,11 +137,11 @@ def parser(file: str) -> dict:
                     total_received_args += 1
             if total_received_args != 6:
                  raise ArgsFillingError("one of args are missing")
+            return args
     except ArgsFillingError as e:
          print(f"Error: {e}")
     except Exception as e:
         print(f"Error: {e}")
-    return args
 
 
 if __name__ == "__main__":
