@@ -2,7 +2,8 @@ from typing import Union
 
 
 class ArgsFillingError(Exception):
-    """This Exception raised when some args value or the args itself is missing or incorrect.
+    """This Exception raised when some args value or
+       the args itself is missing or incorrect.
 
     Attributes:
         message -- explanation of the error
@@ -11,6 +12,26 @@ class ArgsFillingError(Exception):
     def __init__(self, message):
         self.message = message
         super().__init__(self.message)
+
+
+def point_vali_checker(args: dict) -> None:
+
+    entry = args["ENTRY"]
+    exit = args["EXIT"]
+    max_hight = args["HEIGHT"] - 1
+    max_width = args["WIDTH"] - 1
+    if entry[0] > max_hight or entry[0] < 0:
+        raise ArgsFillingError("Entry point hight is out of range")
+    if entry[1] > max_width or entry[1] < 0:
+        raise ArgsFillingError("Entry point width is out of range")
+    if exit[0] > max_hight or exit[0] < 0:
+        raise ArgsFillingError("Exit point hight is out of range")
+    if exit[1] > max_width or exit[1] < 0:
+        raise ArgsFillingError("Exit point width is out of range")
+    if exit == entry:
+        raise ArgsFillingError("ENTRY point and EXIT point \
+can not have the same value")
+
 
 def int_case(value: str) -> int:
     """ This func handle the case when the agrs value is int
@@ -23,6 +44,8 @@ def int_case(value: str) -> int:
     """
     striped_value = value.strip()
     int_value = int(striped_value)
+    if int_value < 0:
+        raise ArgsFillingError(r"The value of HEIGHT\WIDTH is unvalid")
     return int_value
 
 
@@ -38,6 +61,9 @@ def list_case(value: str) -> list:
     x, y = value.split(",")
     int_x = int(x.strip())
     int_y = int(y.strip())
+    if int_x < 0 or int_y < 0:
+        raise ArgsFillingError(r"The value of ENTRY\EXIT is \
+unvalid x,y or both is negative")
     return [int_x, int_y]
 
 
@@ -98,7 +124,7 @@ def value_handler(value: str, key: str) -> Union[list, int, str, bool]:
         elif keys[key] == "str":
             result = str_case(value)
         elif keys[key] == "bool":
-             result = bool_case(value)
+            result = bool_case(value)
         return result
     except ValueError as e:
         print(f"Erorr: {e}")
@@ -133,17 +159,19 @@ def parser(file: str) -> dict:
                 key, value = line.split("=")
                 key = key.strip().upper()
                 if key in args.keys():
-                    args[key] = value_handler(value= value, key= key)
+                    args[key] = value_handler(value=value, key=key)
                     total_received_args += 1
             if total_received_args != 6:
-                 raise ArgsFillingError("one of args are missing")
+                raise ArgsFillingError("one of args are missing")
+            point_vali_checker(args=args)
             return args
     except ArgsFillingError as e:
-         print(f"Error: {e}")
+        print(f"Error: {e}")
     except Exception as e:
         print(f"Error: {e}")
 
 
 if __name__ == "__main__":
-    my_dict = parser(r"C:\Users\User\OneDrive\42 core\m3python\A_maze_ing\Amazing\config.txt")
+    path = r"C:\Users\User\OneDrive\42 core\m3python\A_maze_ing\Amazing\config.txt"
+    my_dict = parser(path)
     print(my_dict)
