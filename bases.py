@@ -2,6 +2,7 @@ from typing import Tuple, List
 import random
 import copy
 
+
 class cell:
 
     def __init__(self, row: int, col: int) -> None:
