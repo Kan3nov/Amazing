@@ -1,4 +1,4 @@
-from typing import Tuple, List
+from typing import Any, cast
 import random
 from queue import Queue
 from parser import parser
@@ -21,20 +21,24 @@ class Cell:
         self.west = True
         self.south = True
 
-    def has_unvisited_n(self, grid: List[List["Cell"]]) -> List["Cell"]:
+    def has_unvisited_n(self, grid: list[list["Cell"]]) -> list["Cell"]:
         my_n = []
-        if self.row - 1 > 0:
+        if self.row - 1 >= 0:
             top = grid[self.row - 1][self.col]
-            my_n.append(top)
+            if (not top.is_visited):
+                my_n.append(top)
         if self.row + 1 < len(grid):
-            bottom = grid[self.row - 1][self.col]
-            my_n.append(bottom)
-        if self.col - 1 > 0:
-            left = grid[self.row - 1][self.col]
-            my_n.append(left)
+            bottom = grid[self.row + 1][self.col]
+            if (not bottom.is_visited):
+                my_n.append(bottom)
+        if self.col - 1 >= 0:
+            left = grid[self.row][self.col - 1]
+            if (not left.is_visited):
+                my_n.append(left)
         if self.col + 1 < len(grid[0]):
-            right = grid[self.row - 1][self.col]
-            my_n.append(right)
+            right = grid[self.row][self.col + 1]
+            if (not right.is_visited):
+                my_n.append(right)
         return my_n
 
     def open_path(c1: "Cell", c2: "Cell") -> None:
@@ -51,7 +55,7 @@ class Cell:
             c2.north = False
             c1.south = False
 
-    def get_acc(self, grid: List[List["Cell"]]) -> List["Cell"]:
+    def get_acc(self, grid: list[list["Cell"]]) -> list["Cell"]:
         open = []
         if (not self.north and self.path[-1] != "S"):
             new = grid[self.row - 1][self.col]
@@ -69,10 +73,10 @@ class Cell:
             new = grid[self.row][self.col - 1]
             new.path = self.path + "W"
             open.append(new)
-        open = random.shuffle(open)
+        random.shuffle(open)
         return open
-    
-    def get_value(self):
+
+    def get_value(self) -> int:
         value = 0
         if self.north:
             value += 1
@@ -86,8 +90,8 @@ class Cell:
 
 
 class Maze:
-    def __init__(self, height: int, width: int, ENTRY: Tuple[int],
-                 EXIT: Tuple[int], PERFECT: bool):
+    def __init__(self, height: int, width: int, ENTRY: tuple[int, int],
+                 EXIT: tuple[int, int], PERFECT: bool):
         self.height = height
         self.width = width
         self.entry = ENTRY
@@ -99,7 +103,7 @@ class Maze:
         elif (self.grid[EXIT[0]][EXIT[1]].is_visited):
             raise MazeError("exit is a 42 point")
 
-    def grid_build(self, height: int, width: int) -> List[List[Cell]]:
+    def grid_build(self, height: int, width: int) -> list[list[Cell]]:
         grid = []
         for i in range(height):
             row = []
@@ -123,19 +127,19 @@ class Maze:
         self.grid[height + 2][width + 1].is_visited = True
         self.grid[height + 2][width + 2].is_visited = True
         self.grid[height + 2][width + 3].is_visited = True
-        self.grid[height - 1][width + 1].is_visited = True
-        self.grid[height - 1][width - 1].is_visited = True
+        self.grid[height - 1][width + 3].is_visited = True
+        self.grid[height - 1][width - 3].is_visited = True
         self.grid[height - 2][width + 1].is_visited = True
         self.grid[height - 2][width + 2].is_visited = True
         self.grid[height - 2][width + 3].is_visited = True
-        self.grid[height - 2][width - 1].is_visited = True
+        self.grid[height - 2][width - 3].is_visited = True
 
     def gen_Maze(self) -> None:
         if self.height <= 5 or self.width <= 7:
             raise ValueError("Maze size is too small")
         self.reserve_42()
-        st_row = random.randint(0, self.height - 1)
-        st_col = random.randint(0, self.width - 1)
+        st_row = self.entry[0]
+        st_col = self.entry[1]
         stack = []
         stack.append(self.grid[st_row][st_col])
         while len(stack):
@@ -150,14 +154,15 @@ class Maze:
             stack.append(rand_cell)
 
     def find_path(self) -> str:
-        q = Queue()
-        self.entry.path = " "
-        q.put(self.entry)
-        while q.not_empty():
+        q: Queue[Any] = Queue()
+        entry = self.grid[self.entry[0]][self.entry[1]]
+        exit = self.grid[self.exit[0]][self.exit[1]]
+        q.put(entry)
+        while not q.empty():
             cur = q.get()
-            if (cur == self.exit):
-                return cur.path[1:]
-            for x in cur.get_acc():
+            if (cur == exit):
+                return cast(str, cur.path[1:])
+            for x in cur.get_acc(self.grid):
                 q.put(x)
         return "exit not found"
 
@@ -174,8 +179,8 @@ class Maze:
         with open(file_name, "w") as f:
             f.write(self.to_hex())
             f.write("\n")
-            f.write(str(self.entry[0]) + "," + str(self.entry[1]))
-            f.write(str(self.exit[0]) + "," + str(self.exit[1]))
+            f.write(str(self.entry[0]) + "," + str(self.entry[1]) + "\n")
+            f.write(str(self.exit[0]) + "," + str(self.exit[1]) + "\n")
             f.write(self.find_path() + "\n")
 
 
@@ -190,3 +195,6 @@ if __name__ == "__main__":
             config["PERFECT"]
         )
     maze.output("meow.txt")
+    for x in maze.grid:
+        for i in x:
+            print(i.is_visited)
