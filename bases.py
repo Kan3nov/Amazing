@@ -4,16 +4,30 @@ from queue import Queue
 from parser import parser
 
 
-random.seed(42)
-
-
 class MazeError(Exception):
+    """This Exception raised when some error related to maze gen occur.
+
+    Attributes:
+        m -- explanation of the error
+    """
     def __init__(self, m: str = "error generating maze"):
         super().__init__(m)
 
 
 class Cell:
+    """This is the main class that represent the cell in maze.
 
+    Attributes:
+        row -- The row index for the cell.
+        col -- The col index for the cell.
+        is_visited -- indicate if the cell is visited or not.
+        is_42 -- ndicate if the cell is 42 cell or not.
+        path -- The path from the entry cell to this cell.
+        north -- True if there is a wall in the north.
+        east -- True if there is a wall in the east.
+        west -- True if there is a wall in the west.
+        south -- True if there is a wall in the south.
+    """
     def __init__(self, row: int, col: int) -> None:
         self.row = row
         self.col = col
@@ -26,6 +40,17 @@ class Cell:
         self.south = True
 
     def has_unvisited_n(self, grid: list[list["Cell"]]) -> list["Cell"]:
+        """
+
+        This function check if the neighbours cell deos not visited yet
+        and return them.
+
+        Args:
+            grid (list[lsit[Cell]]): the maze (grid of cells).
+
+        Returns:
+            list["Cell"]: list of unvisited neighboures of cell.
+        """
         my_n = []
         if self.row - 1 >= 0:
             top = grid[self.row - 1][self.col]
@@ -46,6 +71,11 @@ class Cell:
         return my_n
 
     def open_path(c1: "Cell", c2: "Cell") -> None:
+        """This function used to break the walls between two cells.
+        Args:
+            c1(Cell): The first cell.
+            c2(Cell): The second cell.
+        """
         if c1.col - c2.col == 1:
             c1.west = False
             c2.east = False
@@ -60,6 +90,17 @@ class Cell:
             c1.south = False
 
     def get_acc(self, grid: list[list["Cell"]]) -> list["Cell"]:
+        """
+
+        return all open cells and modifies the path of each of them
+        without including a cell previously visited.
+
+        Args:
+            grid (list[lsit[Cell]]): the maze (grid of cells)
+
+        Returns:
+            list["Cell"]: list of cell
+        """
         open = []
         if (not self.north and self.path[-1] != "S"):
             new = grid[self.row - 1][self.col]
@@ -81,6 +122,15 @@ class Cell:
         return open
 
     def get_value(self) -> int:
+        """Calculates a cumulative bitmask value representing closed walls.
+
+        Uses a binary-based mapping where each direction corresponds to a
+        specific power of 2. The cumulative value is the sum of the active
+        (True) wall states.
+
+        Returns:
+            int: cumulative bitmask
+        """
         value = 0
         if self.north:
             value += 1
@@ -94,6 +144,18 @@ class Cell:
 
 
 class Maze:
+    """
+    This is the main Mzae class that has a functionality to create a maze
+    and find a path for it.
+
+    Attributes:
+        height -- The height of maze.
+        width -- The width of maze.
+        entry -- The entry cell to start finding a path from.
+        exit -- The exit cell to leave the maz.
+        perfect -- Define if the maze is perfect or not.
+        grid -- The maze(grid of cells).
+    """
     def __init__(self, height: int, width: int, ENTRY: tuple[int, int],
                  EXIT: tuple[int, int], PERFECT: bool):
         self.height = height
@@ -108,6 +170,15 @@ class Maze:
             raise MazeError("exit is a 42 point")
 
     def grid_build(self, height: int, width: int) -> list[list[Cell]]:
+        """This function build an initial grid with all cell as unvisited.
+
+        Args:
+            height (int): The height of the grid
+            width (int): The width of the grid
+
+        Returns:
+            list[list["Cell"]]: Initial grid
+        """
         grid = []
         for i in range(height):
             row = []
@@ -117,6 +188,8 @@ class Maze:
         return grid
 
     def reserve_42(self) -> None:
+        """This function mark 42 cells as visited.
+        """
         height = self.height // 2
         width = self.width // 2
         cell42 = [
@@ -144,6 +217,14 @@ class Maze:
             cell.is_visited = True
 
     def open_loop(self, c1: Cell) -> bool:
+        """
+
+        This function create loop in the grid by break a walls in the sent
+        cell, ensuring that the broken walls does not belong to 42 cell
+
+        Returns:
+            bool: True if break a walls , False if the cell is not proper.
+        """
         col = c1.col
         row = c1.row
         grid = self.grid
@@ -170,6 +251,11 @@ class Maze:
         return False
 
     def gen_Maze(self) -> None:
+        """
+
+        This function use the recursive implementation of DFS to generate a
+        perfect maze.
+        """
         if self.height <= 5 or self.width <= 7:
             raise ValueError("Maze size is too small")
         self.reserve_42()
@@ -194,6 +280,11 @@ class Maze:
                     break
 
     def find_path(self) -> str:
+        """This function use a DFS to find the path.
+
+        Retruns:
+            str: The path or (exit not found) if not found.
+        """
         q: Queue[Any] = Queue()
         entry = self.grid[self.entry[0]][self.entry[1]]
         exit = self.grid[self.exit[0]][self.exit[1]]
@@ -207,6 +298,14 @@ class Maze:
         return "exit not found"
 
     def to_hex(self) -> str:
+        """
+
+        This function convert the cumulative bitmask values representing
+        closed walls for each cells to hexa
+
+        Retruns:
+            str: grid of hex number as string
+        """
         hexa = ""
         for row in self.grid:
             for cell in row:
@@ -215,6 +314,13 @@ class Maze:
         return hexa
 
     def output(self, file_name: str) -> None:
+        """
+
+        This functon generate a maze using gen_Maze() and find a path
+        using find_path then write the result in the output file
+        Args:
+            file_name (str): The name of the output file.
+        """
         self.gen_Maze()
         with open(file_name, "w") as f:
             f.write(self.to_hex())
@@ -227,6 +333,8 @@ class Maze:
 if __name__ == "__main__":
     config = parser("config.txt")
     if (config):
+        if config["SEED"]:
+            random.seed(42)
         maze = Maze(
             config["HEIGHT"],
             config["WIDTH"],
