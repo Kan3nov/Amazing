@@ -4,6 +4,9 @@ from queue import Queue
 from parser import parser
 
 
+random.seed(42)
+
+
 class MazeError(Exception):
     def __init__(self, m: str = "error generating maze"):
         super().__init__(m)
@@ -15,6 +18,7 @@ class Cell:
         self.row = row
         self.col = col
         self.is_visited = False
+        self.is_42 = False
         self.path = " "
         self.north = True
         self.east = True
@@ -115,24 +119,55 @@ class Maze:
     def reserve_42(self) -> None:
         height = self.height // 2
         width = self.width // 2
-        self.grid[height][width + 1].is_visited = True
-        self.grid[height][width + 2].is_visited = True
-        self.grid[height][width + 3].is_visited = True
-        self.grid[height][width - 1].is_visited = True
-        self.grid[height][width - 2].is_visited = True
-        self.grid[height][width - 3].is_visited = True
-        self.grid[height + 1][width + 1].is_visited = True
-        self.grid[height + 1][width - 1].is_visited = True
-        self.grid[height + 2][width - 1].is_visited = True
-        self.grid[height + 2][width + 1].is_visited = True
-        self.grid[height + 2][width + 2].is_visited = True
-        self.grid[height + 2][width + 3].is_visited = True
-        self.grid[height - 1][width + 3].is_visited = True
-        self.grid[height - 1][width - 3].is_visited = True
-        self.grid[height - 2][width + 1].is_visited = True
-        self.grid[height - 2][width + 2].is_visited = True
-        self.grid[height - 2][width + 3].is_visited = True
-        self.grid[height - 2][width - 3].is_visited = True
+        cell42 = [
+            self.grid[height][width + 1],
+            self.grid[height][width + 2],
+            self.grid[height][width + 3],
+            self.grid[height][width - 1],
+            self.grid[height][width - 2],
+            self.grid[height][width - 3],
+            self.grid[height + 1][width + 1],
+            self.grid[height + 1][width - 1],
+            self.grid[height + 2][width - 1],
+            self.grid[height + 2][width + 1],
+            self.grid[height + 2][width + 2],
+            self.grid[height + 2][width + 3],
+            self.grid[height - 1][width + 3],
+            self.grid[height - 1][width - 3],
+            self.grid[height - 2][width + 1],
+            self.grid[height - 2][width + 2],
+            self.grid[height - 2][width + 3],
+            self.grid[height - 2][width - 3]
+        ]
+        for cell in cell42:
+            cell.is_42 = True
+            cell.is_visited = True
+
+    def open_loop(self, c1: Cell) -> bool:
+        col = c1.col
+        row = c1.row
+        grid = self.grid
+        if col - 1 >= 0:
+            n_cell = grid[row][col - 1]
+            if n_cell.east is True and not n_cell.is_42:
+                c1.open_path(n_cell)
+                return True
+        if col + 1 <= self.width - 1:
+            n_cell = grid[row][col + 1]
+            if n_cell.west is True and not n_cell.is_42:
+                c1.open_path(n_cell)
+                return True
+        if row - 1 >= 0:
+            n_cell = grid[row - 1][col]
+            if n_cell.south is True and not n_cell.is_42:
+                c1.open_path(n_cell)
+                return True
+        if row + 1 <= self.height - 1:
+            n_cell = grid[row + 1][col]
+            if n_cell.north is True and not n_cell.is_42:
+                c1.open_path(n_cell)
+                return True
+        return False
 
     def gen_Maze(self) -> None:
         if self.height <= 5 or self.width <= 7:
@@ -152,6 +187,11 @@ class Maze:
             rand_cell = random.choice(n)
             cur.open_path(rand_cell)
             stack.append(rand_cell)
+        if not self.perfect:
+            while True:
+                loop_cell = random.choice(random.choice(self.grid))
+                if self.open_loop(loop_cell):
+                    break
 
     def find_path(self) -> str:
         q: Queue[Any] = Queue()
@@ -194,7 +234,4 @@ if __name__ == "__main__":
             config["EXIT"],
             config["PERFECT"]
         )
-    maze.output("meow.txt")
-    for x in maze.grid:
-        for i in x:
-            print(i.is_visited)
+        maze.output("meow.txt")

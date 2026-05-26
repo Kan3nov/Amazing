@@ -1,7 +1,7 @@
-WIDTH = 40
-HEIGHT = 23
-ENTRY = 2 , 4
-EXIT = 15 , 3
+WIDTH = 15
+HEIGHT = 15
+ENTRY = 1, 4
+EXIT = 6 , 9
 OUTPUT_FILE =    maze.txt
-PERFECT = true
+PERFECT = false
 asdkfj ljsadfj = sadfasd HEIGHT
