@@ -4,4 +4,4 @@ ENTRY = 1, 4
 EXIT = 6 , 9
 OUTPUT_FILE =    maze.txt
 PERFECT = false
-asdkfj ljsadfj = sadfasd HEIGHT
+SEED = False

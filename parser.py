@@ -8,10 +8,11 @@ class ParamDict(TypedDict):
     EXIT: tuple[int, int]
     OUTPUT_FILE: str
     PERFECT: bool
+    SEED: bool
 
 
 KeyType = Literal["WIDTH", "HEIGHT", "ENTRY",
-                  "EXIT", "OUTPUT_FILE", "PERFECT"]
+                  "EXIT", "OUTPUT_FILE", "PERFECT", "SEED"]
 
 
 class ArgsFillingError(Exception):
@@ -28,6 +29,14 @@ class ArgsFillingError(Exception):
 
 
 def point_vali_checker(args: ParamDict) -> None:
+    """
+
+    This function chick if the entry and exit point is proper to
+    use or not (eg, not out of range, not has a same value)
+
+    Args:
+        args (ParamDict): dict has a value of entry and exit point
+    """
 
     entry = args["ENTRY"]
     exit = args["EXIT"]
@@ -129,6 +138,7 @@ def value_handler(value: str, key: str
         "EXIT": "tup",
         "OUTPUT_FILE": "str",
         "PERFECT": "bool",
+        "SEED": "bool"
     }
     result: int | tuple[int, int] | str | bool
     if keys[key] == "int":
@@ -161,6 +171,7 @@ def parser(file: str) -> Optional[ParamDict]:
         "EXIT": (0, 0),
         "OUTPUT_FILE": "",
         "PERFECT": True,
+        "SEED": True
     }
     total_received_args = 0
     try:
@@ -178,7 +189,7 @@ def parser(file: str) -> Optional[ParamDict]:
                     typed_key = cast(KeyType, key)
                     args[typed_key] = value_handler(value=value, key=key)
                     total_received_args += 1
-            if total_received_args != 6:
+            if total_received_args != 7:
                 raise ArgsFillingError("one of args are missing")
             point_vali_checker(args=args)
             return args
