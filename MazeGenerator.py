@@ -41,8 +41,7 @@ class Cell:
 
     def has_unvisited_n(self, grid: list[list["Cell"]]) -> list["Cell"]:
         """
-
-        This function check if the neighbours cell deos not visited yet
+        Check if the neighbour cells are not visited yet
         and return them.
 
         Args:
@@ -71,7 +70,7 @@ class Cell:
         return my_n
 
     def open_path(c1: "Cell", c2: "Cell") -> None:
-        """This function used to break the walls between two cells.
+        """Break the walls between two cells.
         Args:
             c1(Cell): The first cell.
             c2(Cell): The second cell.
@@ -91,8 +90,7 @@ class Cell:
 
     def get_acc(self, grid: list[list["Cell"]]) -> list["Cell"]:
         """
-
-        return all open cells and modifies the path of each of them
+        Return all open cells and modifies the path of each of them
         without including a cell previously visited.
 
         Args:
@@ -122,9 +120,9 @@ class Cell:
         return open
 
     def get_value(self) -> int:
-        """Calculates a cumulative bitmask value representing closed walls.
+        """Calculate a cumulative bitmask value representing closed walls.
 
-        Uses a binary-based mapping where each direction corresponds to a
+        Use a binary-based mapping where each direction corresponds to a
         specific power of 2. The cumulative value is the sum of the active
         (True) wall states.
 
@@ -170,7 +168,7 @@ class Maze:
             raise MazeError("exit is a 42 point")
 
     def grid_build(self, height: int, width: int) -> list[list[Cell]]:
-        """This function build an initial grid with all cell as unvisited.
+        """build an initial grid with all cell as unvisited.
 
         Args:
             height (int): The height of the grid
@@ -188,8 +186,7 @@ class Maze:
         return grid
 
     def reserve_42(self) -> None:
-        """This function mark 42 cells as visited.
-        """
+        """Mark 42 cells as visited."""
         height = self.height // 2
         width = self.width // 2
         cell42 = [
@@ -218,8 +215,7 @@ class Maze:
 
     def open_loop(self, c1: Cell) -> bool:
         """
-
-        This function create loop in the grid by break a walls in the sent
+        Create loop in the grid by break a walls in the sent
         cell, ensuring that the broken walls does not belong to 42 cell
 
         Returns:
@@ -252,8 +248,7 @@ class Maze:
 
     def gen_Maze(self) -> None:
         """
-
-        This function use the recursive implementation of DFS to generate a
+        Use the recursive implementation of DFS to generate a
         perfect maze.
         """
         if self.height <= 5 or self.width <= 7:
@@ -280,7 +275,7 @@ class Maze:
                     break
 
     def find_path(self) -> str:
-        """This function use a DFS to find the path.
+        """Use a DFS to find the path.
 
         Retruns:
             str: The path or (exit not found) if not found.
@@ -299,8 +294,7 @@ class Maze:
 
     def to_hex(self) -> str:
         """
-
-        This function convert the cumulative bitmask values representing
+        Convert the cumulative bitmask values representing
         closed walls for each cells to hexa
 
         Retruns:
@@ -315,8 +309,7 @@ class Maze:
 
     def output(self, file_name: str) -> None:
         """
-
-        This functon generate a maze using gen_Maze() and find a path
+        Generate a maze using gen_Maze() and find a path
         using find_path then write the result in the output file
         Args:
             file_name (str): The name of the output file.

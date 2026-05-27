@@ -1,34 +1,139 @@
 from mlx import Mlx
+from MazeGenerator import Maze, Cell
+from parser import parser
 from time import sleep
 from typing import Any
+import random
+
+key_bindings = {
+    "a": 97,
+    "esc": 65307
+}
+
+mouse_bindings = {
+    "LC": 1,  # Left Click
+    "MC": 2,  # Middle Click
+    "RC": 3,  # Right Click
+    "SU": 4,  # Scroll Up
+    "SD": 5  # Scroll Down
+}
 
 
 class GUIError(Exception):
     def __init__(self, m: str = "GUI Error"):
         super().__init__(m)
 
-#  the value of lift click is 1
-#  the value of right click is 3
-#  the value of the middle click is 2
+
+class Controller:
+    def __init__(self, mlx: Any, mlx_con: Any, win_con: Any):
+        self.mlx: Mlx = mlx
+        self.mlx_con = mlx_con
+        self.win_con = win_con
+
+    def close_win(self):
+        self.mlx.mlx_destroy_window(self.mlx_con, self.win_con)
+        self.mlx.mlx_loop_exit(self.mlx_con)
+
+    def vis_grid(self, maze: Maze, img: Any):
+        size = (maze.width, maze.height)
+        for row in maze.grid:
+            for cell in row:
+                self.vis_cell(cell, size, img)
+        self.mlx.mlx_sync(self.mlx_con, 1, img)
+        self.mlx.mlx_do_sync(self.mlx_con)
+
+    def vis_cell(self, cell: Cell, size: tuple[int, int], img: Any) -> None:
+        tile = 32
+        anchor = ((1960 - size[0] * tile) // 2, (1080 - size[1] * tile) // 2)
+        if cell.is_42:
+            img, _, _ = self.mlx.mlx_xpm_file_to_image(self.mlx_con, "resources/cat2.xpm")
+        if cell.north:
+            self.mlx.mlx_put_image_to_window(
+                                            self.mlx_con,
+                                            self.win_con,
+                                            img,
+                                            anchor[0] + cell.col * tile,
+                                            anchor[1] + (cell.row) * tile - tile // 2
+                                            )
+        if cell.south:
+            self.mlx.mlx_put_image_to_window(
+                                            self.mlx_con,
+                                            self.win_con,
+                                            img,
+                                            anchor[0] + cell.col * tile,
+                                            anchor[1] + (cell.row) * tile + tile // 2
+                                            )
+        if cell.west:
+            self.mlx.mlx_put_image_to_window(
+                                            self.mlx_con,
+                                            self.win_con,
+                                            img,
+                                            anchor[0] + (cell.col) * tile - tile // 2,
+                                            anchor[1] + cell.row * tile
+                                            )
+        if cell.east:
+            self.mlx.mlx_put_image_to_window(
+                                            self.mlx_con,
+                                            self.win_con,
+                                            img,
+                                            anchor[0] + (cell.col) * tile + tile // 2,
+                                            anchor[1] + cell.row * tile
+                                            )
 
 
-def close_win(button: int, x: int, y: int, params: dict[Any]) -> None:
+def mouse_listener(button: int, x: int, y: int, params: dict[Any]) -> None:
     print("the left click value is : ", button)
     mlx = params["mlx"]
     mlx_con = params["mlx_con"]
     win_con = params["win_con"]
-    mlx.mlx_destroy_window(mlx_con, win_con)
-    mlx.mlx_loop_exit(mlx_con)
 
 
-def put_pixel(keycode: int, params: dict[Any]):
-    print("'a' keycode value is : ", keycode)
+def key_listener(keycode: int, params: dict[Any]) -> None:
     mlx = params["mlx"]
     mlx_con = params["mlx_con"]
     win_con = params["win_con"]
-    for x in range(16):
-        for y in range(16):
-            mlx.mlx_pixel_put(mlx_con, win_con, 100 + x, 100 + y, 0xffffffff)
+    img = params["img"]
+    controller = Controller(mlx, mlx_con, win_con)
+
+    print("keycode value is : ", keycode)
+    if keycode == key_bindings["esc"]:
+        controller.close_win()
+    else:
+        controller = Controller(mlx, mlx_con, win_con)
+        config = parser("config.txt")
+        if (config):
+            if config["SEED"]:
+                random.seed(42)
+            maze = Maze(
+                config["HEIGHT"],
+                config["WIDTH"],
+                config["ENTRY"],
+                config["EXIT"],
+                config["PERFECT"]
+            )
+            maze.output("meow.txt")
+        controller.vis_grid(maze, img)
+
+
+def initialize(params: dict):
+    mlx = params["mlx"]
+    mlx_con = params["mlx_con"]
+    win_con = params["win_con"]
+    img = params["img"]
+    controller = Controller(mlx, mlx_con, win_con)
+    config = parser("config.txt")
+    if (config):
+        if config["SEED"]:
+            random.seed(42)
+        maze = Maze(
+            config["HEIGHT"],
+            config["WIDTH"],
+            config["ENTRY"],
+            config["EXIT"],
+            config["PERFECT"]
+        )
+        maze.output("meow.txt")
+    controller.vis_grid(maze, img)
 
 
 def main():
@@ -39,22 +144,28 @@ def main():
         if not mlx_con:
             raise GUIError("Error establishing the Graphics Connection")
 
-        win_con = mlx.mlx_new_window(mlx_con, 1920, 1080, "hello khashan")
+        win_con = mlx.mlx_new_window(mlx_con, 1920, 1080, "A_meow_ing")
         if not win_con:
             raise GUIError("Error creating the window")
 
-        mlx.mlx_mouse_hook(win_con, close_win, {"mlx": mlx,
-                                                "mlx_con": mlx_con,
-                                                "win_con": win_con
-                                                })
-        mlx.mlx_key_hook(win_con, put_pixel, {"mlx": mlx,
-                                              "mlx_con": mlx_con,
-                                              "win_con": win_con
-                                              })
-        cat1, w, h = mlx.mlx_xpm_file_to_image(mlx_con, r"resources/cat1.xpm")
-        mlx.mlx_put_image_to_window(mlx_con, win_con, cat1, 100, 100)
+        cat1, _, _ = mlx.mlx_xpm_file_to_image(mlx_con, r"resources/cat1.xpm")
+        mlx.mlx_mouse_hook(win_con,
+                           mouse_listener,
+                           {"mlx": mlx,
+                            "mlx_con": mlx_con,
+                            "win_con": win_con
+                            })
+
+        mlx.mlx_key_hook(win_con,
+                         key_listener,
+                         {"mlx": mlx,
+                          "mlx_con": mlx_con,
+                          "win_con": win_con,
+                          "img": cat1
+                          }
+                         )
+
         mlx.mlx_loop(mlx_con)
-        mlx.mlx_destroy_window(mlx_con, win_con)
 
         # to end the program, release all resources
         mlx.mlx_release(mlx_con)
