@@ -2,6 +2,7 @@ from typing import Any, cast
 import random
 from queue import Queue
 from parser import parser
+from gui import Image, Controller
 
 
 class MazeError(Exception):
@@ -69,7 +70,7 @@ class Cell:
                 my_n.append(right)
         return my_n
 
-    def open_path(c1: "Cell", c2: "Cell") -> None:
+    def open_path(c1: Cell, c2: Cell) -> None:
         """Break the walls between two cells.
         Args:
             c1(Cell): The first cell.
