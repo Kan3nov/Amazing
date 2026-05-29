@@ -37,7 +37,7 @@ class Controller:
         self.mlx.mlx_destroy_window(self.mlx_con, self.win_con)
         self.mlx.mlx_loop_exit(self.mlx_con)
 
-    def vis_maze(self, controller: Controller, frame: Image, wall: Image, ft: Image):
+    def vis_maze(self, params: dict[Any]):
         from MazeGenerator import Maze
 
         config = parser("config.txt")
@@ -51,14 +51,23 @@ class Controller:
                 config["EXIT"],
                 config["PERFECT"],
             )
+
+        params["maze"] = maze
         self.mlx.mlx_clear_window(self.mlx_con, self.win_con)
-        frame.fill_color(0xcf3a93ff)
+        frame:Image = params["frame"]
+        frame.fill_color(0x000000ff)
         maze.gen_Maze()
-        self.vis_grid(maze, frame, wall, ft)
+        self.vis_grid(params)
         maze.output("meow.txt")
 
-    def vis_grid(self, maze: Any, frame: Image, wall: Image, ft: Image,
-                 entry: Any = None, exit: Any = None) -> None:
+    def vis_grid(self, params: dict[Any]) -> None:
+        maze = params["maze"]
+        frame = params["frame"]
+        ft = params["42"]
+        wall = params["wall"]
+        entry = params["entry"]
+        exit = params["exit"]
+
         size = (maze.width, maze.height)
         for row in maze.grid:
             for cell in row:
@@ -66,6 +75,31 @@ class Controller:
                     self.vis_cell(cell, size, frame, ft)
                 else:
                     self.vis_cell(cell, size, frame, wall)
+
+        frame.put_image(entry, (100 + maze.entry[0] * 16 * 2,
+                        100 + maze.entry[1] * 16 * 2))
+        frame.put_image(exit, (100 + maze.exit[0] * 16 * 2,
+                        100 + maze.exit[1] * 16 * 2))
+
+    def vis_path(self, params: dict[Any]):
+        maze = params["maze"]
+        path: str = maze.find_path()
+        frame: Image = params["frame"]
+        path_img = params["path"]
+        vertical = 0
+        horizontal = 0
+
+        for direction in path:
+            if (direction == "N"):
+                vertical -= 1
+            elif (direction == "E"):
+                horizontal += 1
+            elif (direction == "S"):
+                vertical += 1
+            elif (direction == "W"):
+                horizontal -= 1
+            frame.put_image(path_img, (100 + (maze.entry[0] + horizontal) * 32,
+                                       100 + (maze.entry[1] + vertical) * 32))
 
     def vis_cell(self, cell: Any, size: tuple[int, int], frame: Image, wall: Image) -> None:
         tile = 16
@@ -95,21 +129,21 @@ class Controller:
             frame.put_image(wall, (anchor[0] + cell.col * tile * 2 - tile,
                                    anchor[1] + cell.row * tile * 2 - tile))
 
+
 def mouse_listener(button: int, x: int, y: int, params: dict[Any]) -> None:
     print("the left click value is : ", button)
 
 
 def key_listener(keycode: int, params: dict[Any]) -> None:
-    wall = params["wall"]
-    ft = params["42"]
-    frame = params["frame"]
     controller: Controller = params["controller"]
 
     print("keycode value is : ", keycode)
     if keycode == key_bindings["esc"] or keycode == key_bindings["4"]:
         controller.close_win()
     elif keycode == key_bindings["1"]:
-        controller.vis_maze(controller, frame, wall, ft, bg)
+        controller.vis_maze(params)
+    elif keycode == key_bindings["2"]:
+        controller.vis_path(params)
 
 
 class Image:
@@ -177,19 +211,11 @@ class Image:
                 buf1[pos1_byte + x] = buf2[pos2_byte + x]
 
 
-time1 = time()
-
-
 def loop(params: dict[Any]):  # runs every 16ms
-    global time1
-    print("time gap : ", round(time() - time1, 3), "s")
     controller: Controller = params["controller"]
     frame = params["frame"]
-    time1 = time()
     controller.mlx.mlx_put_image_to_window(controller.mlx_con,
                                            controller.win_con, frame.ptr, 0, 0)
-    print("time to show image : ", round(time() - time1, 3), "s")
-    time1 = time()
 
 
 def main():
@@ -205,32 +231,39 @@ def main():
             raise GUIError("Error creating the window")
         controller = Controller(mlx, mlx_con, win_con)
 
-        cat1 = Image(*mlx.mlx_xpm_file_to_image(mlx_con, "resources/cat1.xpm"), controller)
-        cat2 = Image(*mlx.mlx_xpm_file_to_image(mlx_con, "resources/cat2.xpm"), controller)
-        mlx.mlx_sync(mlx_con, 3, win_con)
-
-        canvas = Image(mlx.mlx_new_image(mlx_con, 1960, 1080), 1960, 1080, controller)
+        cat1 = Image(*mlx.mlx_xpm_file_to_image(mlx_con, "resources/cat1.xpm"),
+                     controller)
+        cat2 = Image(*mlx.mlx_xpm_file_to_image(mlx_con, "resources/cat2.xpm"),
+                     controller)
+        chest = Image(*mlx.mlx_xpm_file_to_image(
+            mlx_con, "resources/Chest.xpm"), controller)
+        grass = Image(*mlx.mlx_xpm_file_to_image(
+            mlx_con, "resources/Grass_Middle.xpm"), controller)
+        bush = Image(*mlx.mlx_xpm_file_to_image(
+            mlx_con, "resources/bush.xpm"), controller)
+        app_bush = Image(*mlx.mlx_xpm_file_to_image(
+            mlx_con, "resources/apple_bush.xpm"), controller)
+        canvas = Image(mlx.mlx_new_image(mlx_con, 1960, 1080),
+                       1960, 1080, controller)
         canvas.fill_color(0xcf3a93ff)
-
-        bg = Image(mlx.mlx_new_image(mlx_con, 1960, 1080), 1960, 1080, controller)
-        bg.fill_color(0xcf3a93ff)
 
         params = {
             "controller": controller,
-            "wall": cat1,
-            "42": cat2,
+            "wall": bush,
+            "42": app_bush,
             "frame": canvas,
-            "bg": bg
+            "path": grass,
+            "entry": cat1,
+            "exit": chest
         }
 
         mlx.mlx_mouse_hook(win_con, mouse_listener, params)
         mlx.mlx_key_hook(win_con, key_listener, params)
         mlx.mlx_loop_hook(mlx_con, loop, params)
 
-        controller.vis_maze(controller, canvas, cat1, cat2)
-        #controller.vis_maze(cat1, cat2)
-        mlx.mlx_loop(mlx_con)
 
+        controller.vis_maze(params)
+        mlx.mlx_loop(mlx_con)
 
         # to end the program, release all resources
         mlx.mlx_release(mlx_con)

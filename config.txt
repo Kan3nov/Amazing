@@ -1,4 +1,4 @@
-WIDTH = 40
+WIDTH = 10
 HEIGHT = 25
 ENTRY = 1, 4
 EXIT = 6 , 9

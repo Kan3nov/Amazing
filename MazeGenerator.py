@@ -163,6 +163,7 @@ class Maze:
         self.exit = EXIT
         self.perfect = PERFECT
         self.grid = self.grid_build(height, width)
+
         if (self.grid[ENTRY[0]][ENTRY[1]].is_visited):
             raise MazeError("entry is a 42 point")
         elif (self.grid[EXIT[0]][EXIT[1]].is_visited):

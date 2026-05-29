@@ -1,0 +1,27 @@
+/* XPM */
+static char *bush[] = {
+/* columns rows colors chars-per-pixel */
+"16 16 5 1 ",
+"  c None",
+". c #78A158",
+"X c #A4C263",
+"o c #C0D470",
+"O c white",
+/* pixels */
+"                ",
+"     ......     ",
+"   ...XXX....   ",
+"  ..XXXXXXXX..  ",
+"  .XXXXoooXXX.  ",
+" ..XXooooooXX.. ",
+" .XXooooXoooXX. ",
+" .XXooooooooXX. ",
+" .XXoooooXooXX. ",
+" ..XXoXoooooXX. ",
+" ..XXooooooXX.. ",
+"  .XXXXooXXXX.  ",
+"  ..XXXXXXXX..  ",
+"   ...XXXX...   ",
+"     ......     ",
+"                "
+};
