@@ -5,8 +5,6 @@ from typing import Any
 import random
 
 key_bindings = {
-    "a": 97,
-    "esc": 65307,
     "1": 48 + 1,
     "2": 48 + 2,
     "3": 48 + 3,
@@ -23,21 +21,39 @@ mouse_bindings = {
 
 
 class GUIError(Exception):
+    """This exception is raised when the GUI couldn't be rendered
+
+    Attributes:
+        m -- explanation of the error
+    """
     def __init__(self, m: str = "GUI Error") -> None:
         super().__init__(m)
 
 
 class Controller:
+    """This class is reponsible of showing rendering everthing on a window
+
+    Attributes:
+        mlx: An object reponsible of manipulating the all elements of GUI
+        mlx_con: A pointer to an MLX connection
+        win_con: A pointer to a windown connection
+    """
     def __init__(self, mlx: Any, mlx_con: Any, win_con: Any) -> None:
         self.mlx: Mlx = mlx
         self.mlx_con = mlx_con
         self.win_con = win_con
 
     def close_win(self) -> None:
+        """Close the window"""
         self.mlx.mlx_destroy_window(self.mlx_con, self.win_con)
         self.mlx.mlx_loop_exit(self.mlx_con)
 
     def vis_maze(self, params: dict[Any, Any]) -> None:
+        """Generate a maze
+
+        Args:
+            params: A dictionary containing all data needed to visualize a maze
+        """
 
         config = parser("config.txt")
         if (not config):
@@ -63,6 +79,14 @@ class Controller:
         self.vis_grid(params)
 
     def vis_grid(self, params: dict[Any, Any]) -> None:
+        """Visualize the maze
+
+        visulaize every cell in the grid, mark the entry and exit cells,
+        and show all actions the user can invoke.
+
+        Args:
+            params: A dictionary containing all data needed to visualize a maze
+        """
         maze = params["maze"]
 
         c = params["controller"]
@@ -96,6 +120,12 @@ class Controller:
                                        params["exit"])
 
     def vis_cell(self, cell: Any, color: int) -> None:
+        """Visualize an individual cell
+
+        Args:
+            cell: The cell to visualize
+            color: The color of walls surrounding the cell
+        """
         tile = 16
         anchor = (100, 100)
 
@@ -127,6 +157,13 @@ class Controller:
                                        color)
 
     def vis_path(self, params: dict[Any, Any]) -> None:
+        """Visualize the path
+
+        Visualize the path from entry to exit
+
+        Args:
+            params: a dictionary whose values are needed to show the path
+        """
         maze = params["maze"]
         if (params["path_visible"]):
             self.mlx.mlx_clear_window(self.mlx_con, self.win_con)
@@ -166,6 +203,12 @@ class Controller:
         params["path_visible"] = True
 
     def change_color(self, params: dict[Any, Any]) -> None:
+        """change the colors of maze walls
+
+        Args:
+            params: A dictionary whose values are needed to visualize the maze
+        """
+
         controller: Controller = params["controller"]
         controller.mlx.mlx_clear_window(controller.mlx_con, controller.win_con)
         params["wall"] = random.randint(1, 4294967295)
@@ -174,6 +217,15 @@ class Controller:
 
 
 def key_listener(keycode: int, params: dict[Any, Any]) -> None:
+    """wait for keyboard input and perform actions accordingly
+
+    This function is called whenever a keycap is pressed and performs an
+    action for each key pressed.
+
+    Args:
+        keycode: The code of the key pressed
+        params: A dictionary whose values are needed to visualize the maze
+    """
     controller: Controller = params["controller"]
 
     if keycode == key_bindings["1"]:
@@ -187,6 +239,7 @@ def key_listener(keycode: int, params: dict[Any, Any]) -> None:
 
 
 def main() -> None:
+    """Here the execution of the program starts"""
     try:
         #  MLX Initialization
         mlx = Mlx()

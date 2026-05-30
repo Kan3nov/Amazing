@@ -5,7 +5,7 @@ from parser import parser
 
 
 class MazeError(Exception):
-    """This Exception raised when some error related to maze gen occur.
+    """This Exception is raised when some error in maze generation occur.
 
     Attributes:
         m -- explanation of the error
