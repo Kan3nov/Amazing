@@ -1,8 +1,7 @@
-from typing import Any, cast
+from typing import Any
 import random
 from queue import Queue
 from parser import parser
-from gui import Image, Controller
 
 
 class MazeError(Exception):
@@ -253,7 +252,7 @@ class Maze:
         Use the recursive implementation of DFS to generate a
         perfect maze.
         """
-        if self.height <= 5 or self.width <= 7:
+        if self.height <= 5 or self.width <= 8:
             raise ValueError("Maze size is too small")
         self.reserve_42()
         st_row = self.entry[0]
@@ -284,12 +283,13 @@ class Maze:
         """
         q: Queue[Any] = Queue()
         entry = self.grid[self.entry[0]][self.entry[1]]
+        entry.path = " "
         exit = self.grid[self.exit[0]][self.exit[1]]
         q.put(entry)
         while not q.empty():
-            cur = q.get()
+            cur: Cell = q.get()
             if (cur == exit):
-                return cast(str, cur.path[1:])
+                return cur.path[1:]
             for x in cur.get_acc(self.grid):
                 q.put(x)
         return "exit not found"
