@@ -68,6 +68,48 @@ class Cell:
             if (not right.is_visited):
                 my_n.append(right)
         return my_n
+    
+    def has_42_neighbour(self, grid) -> list[str]:
+        """
+        This function returns a list of cell 42's positions
+        relative to the cell.
+
+        Args:
+            grid (list[lsit[Cell]]): the maze (grid of cells).
+        Retruns:
+            list[str]: position of 42 cells if exist "w" 42 cell on west,
+            "n" 42 cell at north ...
+        """
+        row = self.row
+        col = self.col
+        max_row = len(grid) - 1
+        max_col = len(grid[0]) - 1
+        _42_neighbour = []
+        if row < max_row:
+            if grid[row + 1][col].is_42 is True:
+                _42_neighbour.append("s")
+        if row > 0:
+            if grid[row - 1][col].is_42 is True:
+                _42_neighbour.append("n")
+        if col < max_col:
+            if grid[row][col + 1].is_42 is True:
+                _42_neighbour.append("e")
+        if col > 0:
+            if grid[row][col - 1].is_42 is True:
+                _42_neighbour.append("w")
+        if col > 0 and row < max_row:
+            if grid[row + 1][col - 1].is_42 is True:
+                _42_neighbour.append("sw")
+        if col < max_col and row < max_row:
+            if grid[row + 1][col + 1].is_42 is True:
+                _42_neighbour.append("se")
+        if col > 0 and row > 0:
+            if grid[row - 1][col - 1].is_42 is True:
+                _42_neighbour.append("nw")
+        if row > 0 and col < max_col:
+            if grid[row - 1][col + 1].is_42 is True:
+                _42_neighbour.append("ne")
+        return _42_neighbour
 
     def open_path(c1: "Cell", c2: "Cell") -> None:
         """Break the walls between two cells.

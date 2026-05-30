@@ -3,6 +3,7 @@ from MazeGenerator import Maze, Cell
 from parser import parser
 from typing import Any
 import random
+from time import sleep
 
 key_bindings = {
     "a": 97,
@@ -43,81 +44,149 @@ class Controller:
         self.mlx.mlx_sync(self.mlx_con, 1, wall)
         self.mlx.mlx_sync(self.mlx_con, 1, ft)
         self.mlx.mlx_clear_window(self.mlx_con, self.win_con)
+        cell_obj = []
         for row in maze.grid:
             for cell in row:
                 if cell.is_42:
-                    self.vis_cell(cell, size, ft)
+                    cell_obj.append(self.vis_cell(cell, maze, size, ft))
+                    # self.vis_cell(cell, size, ft)
                 else:
-                    self.vis_cell(cell, size, wall)
+                    cell_obj.append(self.vis_cell(cell, maze, size, wall))
+                    # self.vis_cell(cell, size, wall)
+        print(cell_obj)
+        random.shuffle(cell_obj)
+        max_size = len(cell_obj)
+        self.mlx.mlx_clear_window(self.mlx_con, self.win_con)
+        while len(cell_obj):
+            cell = cell_obj.pop(0)
+            if cell:
+                for wal in cell:
+                    self.mlx.mlx_put_image_to_window(
+                        self.mlx_con,
+                        self.win_con,
+                        wal["img"],
+                        wal["x"],
+                        wal["y"]
+                    )
+                    self.mlx.mlx_do_sync(self.mlx_con)
+                sleep((len(cell_obj) + 1) / max_size * 0.000001)
+                self.mlx.mlx_do_sync(self.mlx_con)
         self.mlx.mlx_do_sync(self.mlx_con)
 
-    def vis_cell(self, cell: Cell, size: tuple[int, int], img: Any) -> None:
+    def vis_cell(self, cell: Cell, maze: Maze, size: tuple[int, int], img: Any) -> list[dict]:
         tile = 16
         anchor = (100, 100)
+        _42_n = cell.has_42_neighbour(maze.grid)
+        wall_obj = []
 
-        if cell.north:
-            self.mlx.mlx_put_image_to_window(
-                self.mlx_con,
-                self.win_con,
-                img,
-                (anchor[0] + cell.col * tile * 2),
-                (anchor[1] + cell.row * tile * 2) - tile
-            )
-            self.mlx.mlx_put_image_to_window(
-                self.mlx_con,
-                self.win_con,
-                img,
-                (anchor[0] + cell.col * tile * 2) + tile,
-                (anchor[1] + cell.row * tile * 2) - tile
-            )
+        base_x = anchor[0] + cell.col * tile * 2
+        base_y = anchor[1] + cell.row * tile * 2
 
-        if cell.east:
-            self.mlx.mlx_put_image_to_window(
-                self.mlx_con,
-                self.win_con,
-                img,
-                (anchor[0] + cell.col * tile * 2) + tile,
-                (anchor[1] + cell.row * tile * 2)
-            )
-            self.mlx.mlx_put_image_to_window(
-                self.mlx_con,
-                self.win_con,
-                img,
-                (anchor[0] + cell.col * tile * 2) + tile,
-                (anchor[1] + cell.row * tile * 2) + tile
-            )
+        if cell.is_42:
+            wall_obj.append({"img": img, "x": base_x - tile,
+                             "y": base_y - tile})
+            wall_obj.append({"img": img, "x": base_x + tile,
+                             "y": base_y - tile})
+            wall_obj.append({"img": img, "x": base_x - tile,
+                             "y": base_y + tile})
+            wall_obj.append({"img": img, "x": base_x + tile,
+                             "y": base_y + tile})
+            wall_obj.append({"img": img, "x": base_x, "y": base_y - tile})
+            wall_obj.append({"img": img, "x": base_x, "y": base_y + tile})
+            wall_obj.append({"img": img, "x": base_x + tile, "y": base_y})
+            wall_obj.append({"img": img, "x": base_x - tile, "y": base_y})
+            
+            return wall_obj
+        
+        if not any(d in _42_n for d in ["nw", "n", "w"]):
+            wall_obj.append({"img": img, "x": base_x - tile,
+                             "y": base_y - tile})
 
-        if cell.south and cell.row == size[1] - 1:
-            self.mlx.mlx_put_image_to_window(
-                self.mlx_con,
-                self.win_con,
-                img,
-                (anchor[0] + cell.col * tile * 2),
-                (anchor[1] + cell.row * tile * 2) + tile
-            )
-            self.mlx.mlx_put_image_to_window(
-                self.mlx_con,
-                self.win_con,
-                img,
-                (anchor[0] + cell.col * tile * 2) - tile,
-                (anchor[1] + cell.row * tile * 2) + tile
-            )
+        if cell.col == size[0] - 1:
+            wall_obj.append({"img": img, "x": base_x + tile,
+                             "y": base_y - tile})
+            
+        if cell.row == size[1] - 1:
+            wall_obj.append({"img": img,
+                             "x": base_x - tile, "y": base_y + tile})
+            
+        if cell.col == size[0] - 1 and cell.row == size[1] - 1:
+            wall_obj.append({"img": img, "x": base_x + tile,
+                             "y": base_y + tile})
 
-        if cell.west and cell.col == 0:
-            self.mlx.mlx_put_image_to_window(
-                self.mlx_con,
-                self.win_con,
-                img,
-                (anchor[0] + cell.col * tile * 2) - tile,
-                (anchor[1] + cell.row * tile * 2)
-            )
-            self.mlx.mlx_put_image_to_window(
-                self.mlx_con,
-                self.win_con,
-                img,
-                (anchor[0] + cell.col * tile * 2) - tile,
-                (anchor[1] + cell.row * tile * 2) - tile
-            )
+        if cell.north and not ("n" in _42_n):
+            wall_obj.append({"img": img, "x": base_x, "y": base_y - tile})
+
+        if cell.east and not ("e" in _42_n):
+            wall_obj.append({"img": img, "x": base_x + tile, "y": base_y})
+
+        if cell.row == size[1] - 1:
+            wall_obj.append({"img": img, "x": base_x, "y": base_y + tile})
+
+        if cell.col == 0:
+            wall_obj.append({"img": img, "x": base_x - tile, "y": base_y})
+
+        return wall_obj
+    
+    def color_cell(self, loc: tuple, color, h, w):
+        row = loc[0]
+        col = loc[1]
+        for r in range(0, h):
+            for c in range(0, w):
+                self.mlx.mlx_pixel_put(self.mlx_con, self.win_con,
+                                       col + c,
+                                       row + r,
+                                       color)
+ 
+    def vis_start_end(self, start, end):
+        tile = 16
+        anchor = (100, 100)
+        st = (anchor[0] + 2 * tile * start[0], anchor[1] + 2 * tile * start[1])
+        ed = (anchor[0] + 2 * tile * end[0], anchor[1] + 2 * tile * end[1])
+        self.color_cell(st, 0xFF00FF00, tile, tile)
+        self.color_cell(ed, 0xFFFF0000, tile, tile)
+        self.mlx.mlx_do_sync(self.mlx_con)
+
+    # SSENNESSENNESSSENENWNEEEEESSWNWWSESEESESENENESEENENNENESSSWSWSSWSSESEESSWSWNNWWSWNNNNENNWWSSWNWWWNWSWWSEESEESSSSSWSEEENESSWSESESWSEENENNEENWWNEENESSSSWWSSENES
+
+    def vis_path(self, start, path: str, color=0xFF0000FF):
+        tile = 16
+        anchor = (100, 100)
+        st = [anchor[0] + 2 * tile * start[0], anchor[1] + 2 * tile * start[1]]
+        for i in range(len(path)):
+            if path[i] == "N":
+                if not i == len(path) - 1:
+                    st[0] -= 2 * tile
+                    self.color_cell(st, color, w=tile, h=tile * 2)
+                else:
+                    self.color_cell(st, color, w=tile, h=tile)
+            elif path[i] == "S":
+                st[0] += tile
+                if not i == len(path) - 1:
+                    self.color_cell(st, color, w=tile, h=tile * 2)
+                    st[0] += tile
+                else:
+                    self.color_cell(st, color, w=tile, h=tile)
+            elif path[i] == "E":
+                if not i == len(path) - 1:
+                    st[1] += tile
+                    self.color_cell(st, color, w=tile * 2, h=tile)
+                    st[1] += tile
+                else:
+                    self.color_cell(st, color, w=tile, h=tile)
+                
+            elif path[i] == "W":
+                if not i == len(path) - 1:
+                    st[1] -= 2 * tile
+                    self.color_cell(st, color, w=tile * 2, h=tile)
+                else:
+                    self.color_cell(st, color, w=tile, h=tile)
+        self.mlx.mlx_do_sync(self.mlx_con)
+
+
+
+
+
 
 
 def mouse_listener(button: int, x: int, y: int, params: dict[Any]) -> None:
@@ -125,6 +194,9 @@ def mouse_listener(button: int, x: int, y: int, params: dict[Any]) -> None:
     mlx = params["mlx"]
     mlx_con = params["mlx_con"]
     win_con = params["win_con"]
+
+
+
 
 
 def key_listener(keycode: int, params: dict[Any]) -> None:
@@ -163,6 +235,10 @@ def vis_maze(params: dict):
     mlx.mlx_clear_window(mlx_con, win_con)
     controller = Controller(mlx, mlx_con, win_con)
     controller.vis_grid(maze, wall, ft)
+    path = maze.find_path()
+    controller.vis_start_end(config["ENTRY"], config["EXIT"])
+    controller.vis_path(config["ENTRY"], path, 0xFF0000FF)
+
 
 
 def main():
