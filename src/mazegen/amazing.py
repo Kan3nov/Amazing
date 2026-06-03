@@ -1,6 +1,6 @@
 from mlx import Mlx
-from MazeGenerator import Maze
-from parser import parser
+from .MazeGenerator import Maze
+from .parser import parser
 from typing import Any
 import random
 
@@ -55,7 +55,7 @@ class Controller:
             params: A dictionary containing all data needed to visualize a maze
         """
 
-        config = parser("config.txt")
+        config = parser()
         if (not config):
             raise GUIError("config hasn't been generated")
         if (config):
@@ -74,7 +74,7 @@ class Controller:
         params["path_visible"] = False
         controller: Controller = params["controller"]
         controller.mlx.mlx_do_sync(controller.mlx_con)
-        maze.output("meow.txt")
+        maze.output(config["OUTPUT_FILE"])
         self.mlx.mlx_clear_window(self.mlx_con, self.win_con)
         self.vis_grid(params)
 

@@ -1,5 +1,5 @@
 from typing import TypedDict, Optional, Literal, cast
-
+import sys
 
 class ParamDict(TypedDict):
     WIDTH: int
@@ -152,7 +152,7 @@ def value_handler(value: str, key: str
     return result
 
 
-def parser(file: str) -> Optional[ParamDict]:
+def parser(file: str = "config.txt") -> Optional[ParamDict]:
     """This function parses the config file and return it as dict
 
         This function try to read the file passed and search across each line
@@ -164,6 +164,10 @@ def parser(file: str) -> Optional[ParamDict]:
         Returns:
             Dict["args_name": value]: dict of args and thier values
     """
+    if len(sys.argv) > 1:
+        file = sys.argv[1]
+    else:
+        file = "config.txt"
     args: ParamDict = {
         "WIDTH": 1,
         "HEIGHT": 1,

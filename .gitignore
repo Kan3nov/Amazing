@@ -229,3 +229,5 @@ mlx-2.2-py3-None-any.whl
 mlx-2.2-py3-ubuntu-any.whl:Zone.Identifier
 mlx-2.2-py3-ubuntu-any.whl:Zone
 mlx-2.2-py3-ubuntu-any.whl
+
+.mypy_cache

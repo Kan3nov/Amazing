@@ -1,4 +1,4 @@
-SCRIPT = gui.py
+SCRIPT = src/mazegen/gui.py
 
 all: run clean
 
@@ -6,7 +6,7 @@ clean:
 	@rm -rf .mypy_cache __pycache__ tempCodeRunnerFile.py
 
 install:
-	@pip install mlx-2.2-py3-none-any.whl
+	@pip install libs/mlx-2.2-py3-none-any.whl
 
 run:
 	@python3 $(SCRIPT)

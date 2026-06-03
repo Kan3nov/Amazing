@@ -1,7 +1,7 @@
 from typing import Any
 import random
 from queue import Queue
-from parser import parser
+from .parser import parser
 
 
 class MazeError(Exception):
@@ -325,8 +325,8 @@ class Maze:
             f.write(self.find_path() + "\n")
 
 
-if __name__ == "__main__":
-    config = parser("config.txt")
+def main() -> None:
+    config = parser()
     if (config):
         if config["SEED"]:
             random.seed(42)
@@ -337,4 +337,8 @@ if __name__ == "__main__":
             config["EXIT"],
             config["PERFECT"]
         )
-        maze.output("meow.txt")
+        maze.output(config["OUTPUT_FILE"])
+
+
+if __name__ == "__main__":
+    main()
