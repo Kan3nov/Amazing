@@ -8,13 +8,18 @@ The "A_maze_ing" project aims to enable students to create a maze (perfect/imper
 The student then visually displays this maze using various tools (such as mlx, etc.).
 
 ## Instructions
-
+ - Use `make env` to create a venv
+ - activate the venv using `source .env/bin/activate`
+ - Use make to install dependancy `make install`
+ - create your config.txt file as mention down
+ - run the script with passing the config file by `python -m mazegen.amazing config.txt`
 ## Resources
  -  https://en.wikipedia.org/wiki/Maze_generation_algorithm 
-        - Used to study different maze generation algorithems
+      - Used to study different maze generation algorithems
  -  "man files provided with the resources"
-        - Used to study the mlx.
- -  
+      - Used to study the mlx.
+ -  https://medium.com/mitb-for-all/building-python-wheel-for-third-party-execution-4669b3d64cc9
+       - used to understand how to create a .whl file 
 
 
 ## Config file structure

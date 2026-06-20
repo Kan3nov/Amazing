@@ -3,6 +3,7 @@ from .MazeGenerator import Maze
 from .parser import parser
 from typing import Any
 import random
+import sys
 
 key_bindings = {
     "1": 48 + 1,
@@ -272,6 +273,7 @@ def main() -> None:
         mlx.mlx_release(mlx_con)
     except Exception as e:
         print("Error: ", e)
+        sys.exit()
 
 
 if __name__ == "__main__":

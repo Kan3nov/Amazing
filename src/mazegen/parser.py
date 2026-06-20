@@ -1,6 +1,7 @@
 from typing import TypedDict, Optional, Literal, cast
 import sys
 
+
 class ParamDict(TypedDict):
     WIDTH: int
     HEIGHT: int
@@ -42,6 +43,12 @@ def point_vali_checker(args: ParamDict) -> None:
     exit = args["EXIT"]
     max_hight = args["HEIGHT"] - 1
     max_width = args["WIDTH"] - 1
+    if max_hight > 49:
+        raise ArgsFillingError("Height is greater than " +
+                               "what the window can accommodate")
+    if max_width > 109:
+        raise ArgsFillingError("Width is greater than " +
+                               "what the window can accommodate")
     if entry[0] > max_hight or entry[0] < 0:
         raise ArgsFillingError("Entry point's height is out of range")
     if entry[1] > max_width or entry[1] < 0:
@@ -199,6 +206,7 @@ def parser(file: str = "config.txt") -> Optional[ParamDict]:
             return args
     except Exception as e:
         print(f"Error in line {line_no}: {e}")
+        sys.exit()
         return None
 
 

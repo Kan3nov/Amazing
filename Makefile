@@ -1,4 +1,4 @@
-SCRIPT = src/mazegen/gui.py
+SCRIPT = a_maze_ing.py
 
 all: run clean
 
@@ -6,7 +6,10 @@ clean:
 	@rm -rf .mypy_cache __pycache__ tempCodeRunnerFile.py
 
 install:
-	@pip install libs/mlx-2.2-py3-none-any.whl
+	@pip install mlx-2.2-py3-none-any.whl
+	@pip install mazegen-1.0.0-py3-none-any.whl
+	@pip install flake8
+	@pip install mypy
 
 run:
 	@python3 $(SCRIPT)

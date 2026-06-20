@@ -69,7 +69,7 @@ class Cell:
                 my_n.append(right)
         return my_n
 
-    def open_path(c1: Cell, c2: Cell) -> None:
+    def open_path(c1: 'Cell', c2: 'Cell') -> None:
         """Break the walls between two cells.
         Args:
             c1(Cell): The first cell.
@@ -213,6 +213,10 @@ class Maze:
         for cell in cell42:
             cell.is_42 = True
             cell.is_visited = True
+        if self.grid[self.entry[0]][self.entry[1]].is_42 is True:
+            raise MazeError("The entry point is 42cell please change it")
+        if self.grid[self.exit[0]][self.exit[1]].is_42 is True:
+            raise MazeError("The exit point is 42cell please change it")
 
     def open_loop(self, c1: Cell) -> bool:
         """
@@ -313,7 +317,7 @@ class Maze:
         """
         Generate a maze using gen_Maze() and find a path
         using find_path then write the result in the output file
-        Args:
+        Args:config["OUTPUT_FI
             file_name (str): The name of the output file.
         """
         self.gen_Maze()
