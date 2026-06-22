@@ -1,4 +1,4 @@
-from mazegen.amazing import main
+from src.mazegen.amazing import main
 
 if __name__ == "__main__":
     main()
