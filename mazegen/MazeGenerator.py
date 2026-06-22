@@ -69,24 +69,39 @@ class Cell:
                 my_n.append(right)
         return my_n
 
-    def open_path(c1: 'Cell', c2: 'Cell') -> None:
+    def open_path(c1: 'Cell', c2: 'Cell') -> bool:
         """Break the walls between two cells.
         Args:
             c1(Cell): The first cell.
             c2(Cell): The second cell.
+
+        Returns:
+            bool: True if a wall has been broken, False otherwise.
         """
+        if (c1.is_42 or c2.is_42):
+            return False
+        broken = False
         if c1.col - c2.col == 1:
+            if c1.west:
+                broken = True
             c1.west = False
             c2.east = False
         elif c1.col - c2.col == -1:
+            if c1.east:
+                broken = True
             c2.west = False
             c1.east = False
         elif c1.row - c2.row == 1:
+            if c1.north:
+                broken = True
             c1.north = False
             c2.south = False
         elif c1.row - c2.row == -1:
+            if c1.south:
+                broken = True
             c2.north = False
             c1.south = False
+        return broken
 
     def get_acc(self, grid: list[list["Cell"]]) -> list["Cell"]:
         """
@@ -218,7 +233,7 @@ class Maze:
         if self.grid[self.exit[0]][self.exit[1]].is_42 is True:
             raise MazeError("The exit point is 42cell please change it")
 
-    def open_loop(self, c1: Cell) -> bool:
+    def open_loops(self) -> int:
         """
         Create loop in the grid by break a walls in the sent
         cell, ensuring that the broken walls does not belong to 42 cell
@@ -226,30 +241,29 @@ class Maze:
         Returns:
             bool: True if break a walls , False if the cell is not proper.
         """
-        col = c1.col
-        row = c1.row
-        grid = self.grid
-        if col - 1 >= 0:
-            n_cell = grid[row][col - 1]
-            if n_cell.east is True and not n_cell.is_42:
-                c1.open_path(n_cell)
-                return True
-        if col + 1 <= self.width - 1:
-            n_cell = grid[row][col + 1]
-            if n_cell.west is True and not n_cell.is_42:
-                c1.open_path(n_cell)
-                return True
-        if row - 1 >= 0:
-            n_cell = grid[row - 1][col]
-            if n_cell.south is True and not n_cell.is_42:
-                c1.open_path(n_cell)
-                return True
-        if row + 1 <= self.height - 1:
-            n_cell = grid[row + 1][col]
-            if n_cell.north is True and not n_cell.is_42:
-                c1.open_path(n_cell)
-                return True
-        return False
+        lp = 0
+        if (self.width <= 1 or self.height <= 1):
+            return lp
+        while not lp:
+            for y in range(0, self.width, 3):
+                for x in range(0, self.height, 3):
+                    if y >= self.width - 1 or x >= self.height - 1:
+                        continue
+                    cell_no = random.randint(0, 3)
+                    match cell_no:
+                        case 0:
+                            lp += self.grid[x][y].open_path(
+                                self.grid[x][y + 1])
+                        case 1:
+                            lp += self.grid[x][y].open_path(
+                                self.grid[x + 1][y])
+                        case 2:
+                            lp += self.grid[x + 1][y + 1].open_path(
+                                self.grid[x + 1][y])
+                        case 3:
+                            lp += self.grid[x + 1][y + 1].open_path(
+                                self.grid[x][y + 1])
+        return lp
 
     def gen_Maze(self) -> None:
         """
@@ -257,8 +271,9 @@ class Maze:
         perfect maze.
         """
         if self.height <= 5 or self.width <= 8:
-            raise ValueError("Maze size is too small")
-        self.reserve_42()
+            print("Error: Maze size cannot accommodate the 42 sign")
+        else:
+            self.reserve_42()
         st_row = self.entry[0]
         st_col = self.entry[1]
         stack = []
@@ -274,13 +289,10 @@ class Maze:
             cur.open_path(rand_cell)
             stack.append(rand_cell)
         if not self.perfect:
-            while True:
-                loop_cell = random.choice(random.choice(self.grid))
-                if self.open_loop(loop_cell):
-                    break
+            self.open_loops()
 
     def find_path(self) -> str:
-        """Use a DFS to find the path.
+        """Use a DFS to find the path
 
         Retruns:
             str: The path or (exit not found) if not found.
@@ -289,13 +301,16 @@ class Maze:
         entry = self.grid[self.entry[0]][self.entry[1]]
         entry.path = " "
         exit = self.grid[self.exit[0]][self.exit[1]]
+        visited = set()
         q.put(entry)
         while not q.empty():
             cur: Cell = q.get()
             if (cur == exit):
                 return cur.path[1:]
             for x in cur.get_acc(self.grid):
-                q.put(x)
+                if x not in visited:
+                    q.put(x)
+                    visited.add(x)
         return "exit not found"
 
     def to_hex(self) -> str:

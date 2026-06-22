@@ -167,11 +167,14 @@ class Controller:
         """
         maze = params["maze"]
         if (params["path_visible"]):
-            self.mlx.mlx_clear_window(self.mlx_con, self.win_con)
-            self.vis_grid(params)
             params["path_visible"] = False
-            return None
-        path: str = maze.find_path()
+            color = params["back"]
+            path: str = params["path"]
+        else:
+            path = maze.find_path()
+            params["path"] = path
+            color = params["path_color"]
+            params["path_visible"] = True
         vertical = 0
         horizontal = 0
 
@@ -182,26 +185,25 @@ class Controller:
             y2 = 0
             if (direction == "N"):
                 vertical -= 1
-                y2 = 2
+                y2 = 5
             elif (direction == "E"):
                 horizontal += 1
-                x1 = -2
+                x1 = -5
             elif (direction == "S"):
                 vertical += 1
-                y1 = -2
+                y1 = -5
             elif (direction == "W"):
                 horizontal -= 1
-                x2 = 2
-            for y in range(1 + y1, 15 + y2):
-                for x in range(1 + x1, 15 + x2):
+                x2 = 5
+            for y in range(5 + y1, 10 + y2):
+                for x in range(5 + x1, 10 + x2):
                     self.mlx.mlx_pixel_put(self.mlx_con,
                                            self.win_con,
                                            100 + ((maze.entry[1] +
                                                    horizontal) * 16 + x),
                                            100 + ((maze.entry[0] +
                                                    vertical) * 16 + y),
-                                           params["path"])
-        params["path_visible"] = True
+                                           color)
 
     def change_color(self, params: dict[Any, Any]) -> None:
         """change the colors of maze walls
@@ -212,6 +214,7 @@ class Controller:
 
         controller: Controller = params["controller"]
         controller.mlx.mlx_clear_window(controller.mlx_con, controller.win_con)
+        params["path_visible"] = False
         params["wall"] = random.randint(1, 4294967295)
         params["ft"] = random.randint(1, 4294967295)
         self.vis_grid(params)
@@ -259,7 +262,8 @@ def main() -> None:
             "wall": 0xffffffff,
             "entry": 0xff432dff,
             "exit": 0xffff00ff,
-            "path": 0xff22ddff,
+            "path_color": 0xff22ddff,
+            "back": 0xff000000,
             "ft": 0xff00ffff,
             "path_visible": False
         }

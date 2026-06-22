@@ -200,8 +200,8 @@ def parser(file: str = "config.txt") -> Optional[ParamDict]:
                     typed_key = cast(KeyType, key)
                     args[typed_key] = value_handler(value=value, key=key)
                     total_received_args += 1
-            if total_received_args != 7:
-                raise ArgsFillingError("one of args are missing")
+            if total_received_args < 7:
+                raise ArgsFillingError("one of the args is missing")
             point_vali_checker(args=args)
             return args
     except Exception as e:
